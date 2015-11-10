@@ -1,0 +1,45 @@
+#cloud-config
+coreos:
+  update:
+    reboot-strategy: etcd-lock
+    group: alpha
+  units:
+    - name: sshd.socket
+      command: restart
+      content: |
+        [Socket]
+        ListenStream=22
+        Accept=yes
+    - name: settimezone.service
+      command: start
+      content: |
+        [Unit]
+        Description=Set the timezone to UTC
+        [Service]
+        ExecStart=/usr/bin/timedatectl set-timezone UTC
+        RemainAfterExit=yes
+        Type=oneshot
+    - name: etcd2.service
+      command: start
+      drop-ins:
+        - name: 50-cloud-init.conf
+          content: |
+            [Service]
+            Environment=ETCD_NAME=etcd0
+            Environment=ETCD_INITIAL_CLUSTER_STATE=new
+            Environment=ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
+            Environment=ETCD_INITIAL_CLUSTER=etcd0=http://$private_ipv4:2380
+            Environment=ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$private_ipv4:2380
+            Environment=ETCD_LISTEN_PEER_URLS=http://$private_ipv4:2380
+            Environment=ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+            Environment=ETCD_ADVERTISE_CLIENT_URLS=http://$private_ipv4:2379
+            Environment=ETCD_HEARTBEAT_INTERVAL=500
+            Environment=ETCD_ELECTION_TIMEOUT=5000
+            Environment=ETCD_SNAPSHOT_COUNT=10000
+            Environment=ETCD_MAX_SNAPSHOTS=5
+            Environment=ETCD_MAX_WALS=5
+            Environment=ETCD_DATA_DIR=/var/lib/etcd2-data
+            Environment=ETCD_WAL_DIR=/var/lib/etcd2-wal
+            Restart=always
+            RestartSec=5
+            StartLimitInterval=0
