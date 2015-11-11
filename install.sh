@@ -23,7 +23,7 @@ do
   export ETCD_INDEX
 
   gcloud compute instances create etcd-${ETCD_INDEX} \
-    --tags "k8s-cluster,etcd-cluster,etcd-${ETCD_INDEX}"
+    --tags "k8s-cluster,etcd-cluster,etcd-${ETCD_INDEX}" \
     --project ${PROJECT} \
     --zone ${ZONE} \
     --machine-type n1-standard-1 \
