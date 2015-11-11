@@ -11,14 +11,14 @@ gcloud config set compute/zone ${ZONE}
 
 ETCD_ARRAY=()
 
-for ETCD_INDEX in {1..${ETCD_NODES_AMOUNT}}
+for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT})
 do
   ETCD_ARRAY+=("etcd${ETCD_INDEX}=http://${ETCD_NETWORK_PREFIX}.${ETCD_INDEX}:2380")
 done
 
 export ETCD_ENDPOINTS=$(IFS=,; echo "${ETCD_ARRAY[*]}")
 
-for ETCD_INDEX in {1..${ETCD_NODES_AMOUNT}}
+for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT})
 do
   export ETCD_INDEX
 
