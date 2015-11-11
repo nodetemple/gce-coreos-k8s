@@ -25,14 +25,14 @@ coreos:
         - name: 50-cloud-init.conf
           content: |
             [Service]
-            Environment=ETCD_NAME=etcd0
+            Environment=ETCD_NAME=etcd${ETCD_INDEX}
             Environment=ETCD_INITIAL_CLUSTER_STATE=new
             Environment=ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
-            Environment=ETCD_INITIAL_CLUSTER=etcd0=http://$private_ipv4:2380
-            Environment=ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$private_ipv4:2380
-            Environment=ETCD_LISTEN_PEER_URLS=http://$private_ipv4:2380
+            Environment=ETCD_INITIAL_CLUSTER=${ETCD_ENDPOINTS}
+            Environment=ETCD_INITIAL_ADVERTISE_PEER_URLS=http://${ETCD_NETWORK_PREFIX}.${ETCD_INDEX}:2380
+            Environment=ETCD_LISTEN_PEER_URLS=http://${ETCD_NETWORK_PREFIX}.${ETCD_INDEX}:2380
             Environment=ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
-            Environment=ETCD_ADVERTISE_CLIENT_URLS=http://$private_ipv4:2379
+            Environment=ETCD_ADVERTISE_CLIENT_URLS=http://${ETCD_NETWORK_PREFIX}.${ETCD_INDEX}:2379
             Environment=ETCD_HEARTBEAT_INTERVAL=500
             Environment=ETCD_ELECTION_TIMEOUT=5000
             Environment=ETCD_SNAPSHOT_COUNT=10000
