@@ -39,7 +39,7 @@ do
   gcloud compute routes create etcd-${ETCD_INDEX} \
     --project ${PROJECT} \
     --network ${NETWORK} \
-    --destination-range ${ETCD_NETWORK_PREFIX}.${ETCD_INDEX}/32
+    --destination-range ${ETCD_NETWORK_PREFIX}.${ETCD_INDEX}/32 \
     --next-hop-instance etcd-${ETCD_INDEX} \
     --next-hop-instance-zone ${ZONE} \
     --priority 100
