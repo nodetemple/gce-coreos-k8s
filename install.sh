@@ -9,6 +9,8 @@ gcloud config set project ${PROJECT}
 gcloud config set compute/region ${REGION}
 gcloud config set compute/zone ${ZONE}
 
+echo -e "- Initializing ${ETCD_NODES_AMOUNT} etcd nodes"
+
 ETCD_ARRAY=()
 
 for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT})
@@ -21,6 +23,8 @@ export ETCD_ENDPOINTS=$(IFS=,; echo "${ETCD_ARRAY[*]}")
 for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT})
 do
   export ETCD_INDEX
+
+  echo -e "- Setting up etcd node #${ETCD_INDEX}"
 
   gcloud compute instances create etcd-${ETCD_INDEX} \
     --tags "k8s-cluster,etcd-cluster,etcd-${ETCD_INDEX}" \
