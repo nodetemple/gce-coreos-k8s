@@ -34,7 +34,7 @@ do
     --network ${NETWORK} \
     --can-ip-forward \
     --no-scopes \
-    --metadata user-data="$(envsubst < metadata/etcd.yaml)"
+    --metadata user-data="$(perl -pe 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : ""/eg' tmp.yaml)"
 
   gcloud compute routes create etcd-${ETCD_INDEX} \
     --project ${PROJECT} \
