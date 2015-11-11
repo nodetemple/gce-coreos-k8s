@@ -9,7 +9,7 @@ gcloud config set project ${PROJECT}
 gcloud config set compute/region ${REGION}
 gcloud config set compute/zone ${ZONE}
 
-echo -e "- Initializing ${ETCD_NODES_AMOUNT} etcd nodes"
+echo -e "- Initializing setup of ${ETCD_NODES_AMOUNT} etcd nodes"
 
 ETCD_ARRAY=()
 
@@ -24,7 +24,9 @@ for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT})
 do
   export ETCD_INDEX
 
-  echo -e "- Setting up etcd node #${ETCD_INDEX}"
+  echo -e "- Setting up etcd node #${ETCD_INDEX} instance"
+
+  ETCD_META=$(perl -pe 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : ""/eg' metadata/etcd.yaml)
 
   gcloud compute instances create etcd-${ETCD_INDEX} \
     --tags "k8s-cluster,etcd-cluster,etcd-${ETCD_INDEX}" \
@@ -38,7 +40,9 @@ do
     --network ${NETWORK} \
     --can-ip-forward \
     --no-scopes \
-    --metadata user-data="$(perl -pe 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : ""/eg' metadata/etcd.yaml)"
+    --metadata "user-data=${ETCD_META}"
+
+  echo -e "- Setting up etcd node #${ETCD_INDEX} route"
 
   gcloud compute routes create etcd-${ETCD_INDEX} \
     --project ${PROJECT} \
@@ -48,3 +52,5 @@ do
     --next-hop-instance-zone ${ZONE} \
     --priority 100
 done
+
+echo -e "- All tasks completed"

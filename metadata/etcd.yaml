@@ -4,21 +4,6 @@ coreos:
     reboot-strategy: etcd-lock
     group: alpha
   units:
-    - name: sshd.socket
-      command: restart
-      content: |
-        [Socket]
-        ListenStream=22
-        Accept=yes
-    - name: settimezone.service
-      command: start
-      content: |
-        [Unit]
-        Description=Set the timezone to UTC
-        [Service]
-        ExecStart=/usr/bin/timedatectl set-timezone UTC
-        RemainAfterExit=yes
-        Type=oneshot
     - name: etcd2.service
       command: start
       drop-ins:
