@@ -41,8 +41,8 @@ ETCD_META=$(metatmp etcd.yaml ${CLUSTER_NAME}-etcd.yaml)
 gcloud compute instances create $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}); do echo "${CLUSTER_NAME}-etcd-${ETCD_INDEX}"; done) \
   --tags "${CLUSTER_NAME},${CLUSTER_NAME}-etcd" \
   --project ${PROJECT} \
-  --network ${NETWORK} \
   --zone ${ZONE} \
+  --network ${NETWORK} \
   --machine-type n1-standard-1 \
   --image-project coreos-cloud \
   --image coreos-alpha-845-0-0-v20151025 \
@@ -56,11 +56,24 @@ gcloud compute addresses create ${CLUSTER_NAME}-lb-etcd-ip \
   --project ${PROJECT} \
   --global
 
-gcloud compute --project "nodetemple-main-project" http-health-checks create "demo-cluster-lb-etcd-check" --port "2379" --request-path "/version" --check-interval "5" --timeout "5" --unhealthy-threshold "2" --healthy-threshold "2"
+gcloud compute http-health-checks create ${CLUSTER_NAME}-lb-etcd-check \
+  --project ${PROJECT} \
+  --port 2379 \
+  --request-path "/version"
 
-gcloud compute --project "nodetemple-main-project" target-pools create "demo-cluster-lb-etcd-pool" --region "europe-west1" --health-check "demo-cluster-lb-etcd-check" --session-affinity "CLIENT_IP"
+gcloud compute target-pools create ${CLUSTER_NAME}-lb-etcd-pool \
+  --project ${PROJECT} \
+  --region ${REGION} \
+  --health-check ${CLUSTER_NAME}-lb-etcd-check \
+  --session-affinity CLIENT_IP
 
-gcloud compute --project "nodetemple-main-project" forwarding-rules create "demo-cluster-lb-etcd-rule" --region "europe-west1" --address "104.155.54.67" --ip-protocol "TCP" --port-range "2379-2380" --target-pool "demo-cluster-lb-etcd-pool"
+gcloud compute forwarding-rules create ${CLUSTER_NAME}-lb-etcd-rule \
+  --project ${PROJECT} \
+  --region ${REGION} \
+  --address "104.155.54.67" \ # TODO: get created static IP
+  --ip-protocol TCP \
+  --port-range 2379 \
+  --target-pool ${CLUSTER_NAME}-lb-etcd-pool
 
 echo -e "- Setting up k8s master node"
 
