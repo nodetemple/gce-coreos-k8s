@@ -5,7 +5,7 @@ coreos:
     group: alpha
   flannel:
     etcd-endpoints: http://127.0.0.1:2379
-    interface: $private_ipv4
+    interface: $private_ipv4 # udp 8472 between master and workers
   units:
     - name: flanneld.service
       command: start
