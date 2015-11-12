@@ -29,7 +29,7 @@ gcloud compute instances create $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}
   --no-scopes \
   --metadata-from-file user-data=${ETCD_META}
 
-gcloud compute firewall-rules create ${CLUSTER_NAME}-etcd
+gcloud compute firewall-rules create ${CLUSTER_NAME}-etcd \
   --project ${PROJECT} \
   --network ${NETWORK} \
   --source-tags "${CLUSTER_NAME}-etcd" \
