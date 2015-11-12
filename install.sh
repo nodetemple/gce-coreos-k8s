@@ -4,7 +4,6 @@ set -o nounset
 set -o pipefail
 
 source ./conf.sh
-source ./func.sh
 
 gcloud config set project ${PROJECT}
 gcloud config set compute/region ${REGION}
@@ -27,6 +26,7 @@ do
 
   echo -e "- Setting up etcd node #${ETCD_INDEX} instance"
 
+  source ./func.sh
   ETCD_META=$(metatmp etcd.yaml etcd-${ETCD_INDEX}.yaml)
 
   gcloud compute instances create etcd-${ETCD_INDEX} \
