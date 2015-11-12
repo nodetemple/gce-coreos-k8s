@@ -3,6 +3,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+export CLUSTER_NAME=demo-cluster
+
 export PROJECT=nodetemple-main-project
 export REGION=europe-west1
 export ZONE=${REGION}-d

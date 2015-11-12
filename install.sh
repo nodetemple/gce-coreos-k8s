@@ -3,7 +3,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-source ./env.sh
+source ./conf.sh
+source ./func.sh
 
 gcloud config set project ${PROJECT}
 gcloud config set compute/region ${REGION}
@@ -26,10 +27,10 @@ do
 
   echo -e "- Setting up etcd node #${ETCD_INDEX} instance"
 
-  ETCD_META=$(perl -pe 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : ""/eg' metadata/etcd.yaml)
+  ETCD_META=$(metatmp etcd.yaml etcd-${ETCD_INDEX}.yaml)
 
   gcloud compute instances create etcd-${ETCD_INDEX} \
-    --tags "k8s-cluster,etcd-cluster,etcd-${ETCD_INDEX}" \
+    --tags ${CLUSTER_NAME} \
     --project ${PROJECT} \
     --zone ${ZONE} \
     --machine-type n1-standard-1 \
@@ -40,7 +41,7 @@ do
     --network ${NETWORK} \
     --can-ip-forward \
     --no-scopes \
-    --metadata "user-data=${ETCD_META}"
+    --metadata-from-file user-data=${ETCD_META}
 
   echo -e "- Setting up etcd node #${ETCD_INDEX} route"
 
