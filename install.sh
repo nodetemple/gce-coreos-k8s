@@ -52,6 +52,16 @@ gcloud compute instances create $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}
   --no-scopes \
   --metadata-from-file user-data=${ETCD_META}
 
+gcloud compute addresses create ${CLUSTER_NAME}-lb-etcd-ip \
+  --project ${PROJECT} \
+  --global
+
+gcloud compute --project "nodetemple-main-project" http-health-checks create "demo-cluster-lb-etcd-check" --port "2379" --request-path "/version" --check-interval "5" --timeout "5" --unhealthy-threshold "2" --healthy-threshold "2"
+
+gcloud compute --project "nodetemple-main-project" target-pools create "demo-cluster-lb-etcd-pool" --region "europe-west1" --health-check "demo-cluster-lb-etcd-check" --session-affinity "CLIENT_IP"
+
+gcloud compute --project "nodetemple-main-project" forwarding-rules create "demo-cluster-lb-etcd-rule" --region "europe-west1" --address "104.155.54.67" --ip-protocol "TCP" --port-range "2379-2380" --target-pool "demo-cluster-lb-etcd-pool"
+
 echo -e "- Setting up k8s master node"
 
 source ./func.sh
