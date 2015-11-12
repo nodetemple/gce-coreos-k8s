@@ -13,7 +13,7 @@ echo -e "- Setting up ${ETCD_NODES_AMOUNT} etcd nodes"
 
 export ETCD_DISCOVERY_TOKEN=$(curl -s https://discovery.etcd.io/new?size=${ETCD_NODES_AMOUNT})
 source ./func.sh
-ETCD_META=$(metatmp etcd.yaml etcd-${ETCD_INDEX}.yaml)
+ETCD_META=$(metatmp etcd.yaml ${CLUSTER_NAME}-etcd.yaml)
 
 gcloud compute instances create $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}); do echo "${CLUSTER_NAME}-etcd-${ETCD_INDEX}"; done) \
   --tags "${CLUSTER_NAME}-etcd,${CLUSTER_NAME}" \
