@@ -9,49 +9,31 @@ gcloud config set project ${PROJECT}
 gcloud config set compute/region ${REGION}
 gcloud config set compute/zone ${ZONE}
 
-echo -e "- Initializing setup of ${ETCD_NODES_AMOUNT} etcd nodes"
+echo -e "- Setting up ${ETCD_NODES_AMOUNT} etcd nodes"
 
-ETCD_ARRAY=()
+export ETCD_DISCOVERY_TOKEN=$(curl -s https://discovery.etcd.io/new?size=${ETCD_NODES_AMOUNT})
+source ./func.sh
+ETCD_META=$(metatmp etcd.yaml etcd-${ETCD_INDEX}.yaml)
 
-for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT})
-do
-  ETCD_ARRAY+=("etcd${ETCD_INDEX}=http://${ETCD_NETWORK_PREFIX}.${ETCD_INDEX}:2380")
-done
+gcloud compute instances create $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}); do echo "${CLUSTER_NAME}-etcd-${ETCD_INDEX}"; done) \
+  --tags "${CLUSTER_NAME}-etcd,${CLUSTER_NAME}" \
+  --project ${PROJECT} \
+  --network ${NETWORK} \
+  --zone ${ZONE} \
+  --machine-type n1-standard-1 \
+  --image-project coreos-cloud \
+  --image coreos-alpha-845-0-0-v20151025 \
+  --boot-disk-type pd-ssd \
+  --boot-disk-size 30GB \
+  --can-ip-forward \
+  --no-scopes \
+  --metadata-from-file user-data=${ETCD_META}
 
-export ETCD_ENDPOINTS=$(IFS=,; echo "${ETCD_ARRAY[*]}")
-
-for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT})
-do
-  export ETCD_INDEX
-
-  echo -e "- Setting up etcd node #${ETCD_INDEX} instance"
-
-  source ./func.sh
-  ETCD_META=$(metatmp etcd.yaml etcd-${ETCD_INDEX}.yaml)
-
-  gcloud compute instances create etcd-${ETCD_INDEX} \
-    --tags ${CLUSTER_NAME} \
-    --project ${PROJECT} \
-    --zone ${ZONE} \
-    --machine-type n1-standard-1 \
-    --image-project coreos-cloud \
-    --image coreos-alpha-845-0-0-v20151025 \
-    --boot-disk-type pd-ssd \
-    --boot-disk-size 30GB \
-    --network ${NETWORK} \
-    --can-ip-forward \
-    --no-scopes \
-    --metadata-from-file user-data=${ETCD_META}
-
-  echo -e "- Setting up etcd node #${ETCD_INDEX} route"
-
-  gcloud compute routes create etcd-${ETCD_INDEX} \
-    --project ${PROJECT} \
-    --network ${NETWORK} \
-    --destination-range ${ETCD_NETWORK_PREFIX}.${ETCD_INDEX}/32 \
-    --next-hop-instance etcd-${ETCD_INDEX} \
-    --next-hop-instance-zone ${ZONE} \
-    --priority 100
-done
+gcloud compute firewall-rules create etcd-fw-rule
+  --project ${PROJECT} \
+  --network ${NETWORK} \
+  --source-tags "${CLUSTER_NAME}-etcd" \
+  --target-tags "${CLUSTER_NAME}-etcd" \
+  --allow tcp:2379-2380
 
 echo -e "- All tasks completed"

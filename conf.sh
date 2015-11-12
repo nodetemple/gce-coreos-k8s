@@ -11,7 +11,6 @@ export ZONE=${REGION}-d
 export NETWORK=default
 
 export ETCD_NODES_AMOUNT=3
-export ETCD_NETWORK_PREFIX=10.10.0
 
 # The address of the master node. In most cases this will be the publicly routable IP of the master node. Worker nodes must be able to reach the master via this address on port 443. Additionally, external clients (such as an administrator using kubectl) will also need access, since this will run the Kubernetes API endpoint.
 #If you will be running a high-availability control-plane consisting of multiple master nodes, then MASTER_HOST will ideally be a network load balancer that sits in front of the master nodes. Alternatively, a DNS name can be configured which will resolve to the master node IPs. How requests are routed to the master nodes will be an important consideration when creating the TLS certificates.
