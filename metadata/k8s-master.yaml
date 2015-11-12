@@ -1,0 +1,30 @@
+#cloud-config
+coreos:
+  update:
+    reboot-strategy: best-effort
+    group: alpha
+  flannel:
+    etcd-endpoints: http://127.0.0.1:2379
+    interface: $private_ipv4
+  units:
+    - name: flanneld.service
+      command: start
+      drop-ins:
+        - name: 50-cloud-init.conf
+          content: |
+            [Service]
+            ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{"Network":"${POD_NETWORK}","Backend":{"Type":"vxlan"}}'
+            Restart=always
+            RestartSec=5
+            StartLimitInterval=0
+    - name: docker.service
+      command: start
+      drop-ins:
+        - name: 50-cloud-init.conf
+          content: |
+            [Unit]
+            Requires=flanneld.service
+            After=flanneld.service
+            Restart=always
+            RestartSec=5
+            StartLimitInterval=0

@@ -1,7 +1,7 @@
 #cloud-config
 coreos:
   update:
-    reboot-strategy: etcd-lock
+    reboot-strategy: best-effort
     group: alpha
   etcd2:
     discovery: ${ETCD_DISCOVERY_TOKEN}
