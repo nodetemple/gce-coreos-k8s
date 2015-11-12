@@ -36,4 +36,11 @@ gcloud compute firewall-rules create ${CLUSTER_NAME}-etcd \
   --target-tags "${CLUSTER_NAME}-etcd" \
   --allow tcp:2379-2380
 
+gcloud compute firewall-rules create ${CLUSTER_NAME}-ssh \
+  --project ${PROJECT} \
+  --network ${NETWORK} \
+  --source-ranges "0.0.0.0/0" \
+  --target-tags "${CLUSTER_NAME}" \
+  --allow tcp:22
+
 echo -e "- All tasks completed"
