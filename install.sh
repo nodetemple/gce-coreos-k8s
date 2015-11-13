@@ -42,7 +42,7 @@ gcloud compute instance-groups unmanaged create ${CLUSTER_NAME}-etcd-group \
 
 gcloud compute instance-groups unmanaged add-instances ${CLUSTER_NAME}-etcd-group \
   --zone ${ZONE} \
-  --instances $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}); do echo "${CLUSTER_NAME}-etcd-${ETCD_INDEX}"; done)
+  --instances $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}); do echo "${CLUSTER_NAME}-etcd-${ETCD_INDEX}"; done) #if [ ${ETCD_INDEX} -gt 1 ]; then echo ","; fi;
 
 gcloud compute firewall-rules create ${CLUSTER_NAME}-etcd-internal \
   --network ${NETWORK} \
@@ -65,7 +65,7 @@ gcloud compute firewall-rules create ${CLUSTER_NAME}-etcd-k8s \
 gcloud compute addresses create ${CLUSTER_NAME}-lb-etcd-ip \
   --region ${REGION}
 
-export ETCD_LB_IP="gcloud compute addresses describe ${CLUSTER_NAME}-lb-etcd-ip --region ${REGION} --format json | jq --raw-output '.address'"
+export ETCD_LB_IP=$(gcloud compute addresses describe ${CLUSTER_NAME}-lb-etcd-ip --region ${REGION} --format json | jq --raw-output '.address')
 
 gcloud compute http-health-checks create ${CLUSTER_NAME}-lb-etcd-check \
   --port 2379 \
