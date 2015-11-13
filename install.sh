@@ -37,6 +37,9 @@ gcloud compute instances create $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}
   --no-scopes \
   --metadata-from-file user-data=${ETCD_META}
 
+#wget https://storage.googleapis.com/kubernetes-release/release/v1.1.1/bin/linux/amd64/kubelet
+#https://github.com/kelseyhightower/coreos-ops-tutorial/blob/master/kube-kubelet.service
+
 ETCD_INSTANCES=$(echo $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}); do if [ ${ETCD_INDEX} -gt 1 ]; then echo ","; fi; echo "${CLUSTER_NAME}-etcd-${ETCD_INDEX}"; done) | sed "s/\s//g")
 
 gcloud compute firewall-rules create ${CLUSTER_NAME}-etcd-internal \
