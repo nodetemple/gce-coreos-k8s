@@ -4,8 +4,8 @@ coreos:
     reboot-strategy: best-effort
     group: alpha
   flannel:
-    etcd-endpoints: http://127.0.0.1:2379
-    interface: $private_ipv4 # udp 8472 between master and workers
+    etcd-endpoints: http://${ETCD_LB_IP}:2379
+    interface: $private_ipv4
   units:
     - name: flanneld.service
       command: start
