@@ -12,20 +12,19 @@ gcloud config set compute/zone ${ZONE}
 echo -e "- Setting up initial firewall rules"
 
 gcloud compute firewall-rules create ${CLUSTER_NAME}-ssh \
---network ${NETWORK} \
---source-ranges "0.0.0.0/0" \
---target-tags "${CLUSTER_NAME}" \
---allow tcp:22
+  --network ${NETWORK} \
+  --source-ranges "0.0.0.0/0" \
+  --target-tags "${CLUSTER_NAME}" \
+  --allow tcp:22
 
-echo -e "- Setting up ${ETCD_NODES_AMOUNT} etcd nodes"
+echo -e "- Setting up ${MASTER_NODES_AMOUNT} master nodes"
 
-export ETCD_DISCOVERY_TOKEN=$(curl -s https://discovery.etcd.io/new?size=${ETCD_NODES_AMOUNT})
-
+export ETCD_DISCOVERY_TOKEN=$(curl -s https://discovery.etcd.io/new?size=${MASTER_NODES_AMOUNT})
 source ./func.sh
-ETCD_META=$(metatmp etcd.yaml ${CLUSTER_NAME}-etcd.yaml)
+ETCD_META=$(metatmp k8s-master.yaml ${CLUSTER_NAME}-k8s-master.yaml)
 
-gcloud compute instances create $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}); do echo "${CLUSTER_NAME}-etcd-${ETCD_INDEX}"; done) \
-  --tags "${CLUSTER_NAME},${CLUSTER_NAME}-etcd" \
+gcloud compute instances create $(for NODES_INDEX in $(seq 1 ${MASTER_NODES_AMOUNT}); do echo "${CLUSTER_NAME}-master-${NODES_INDEX}"; done) \
+  --tags "${CLUSTER_NAME},${CLUSTER_NAME}-master" \
   --zone ${ZONE} \
   --network ${NETWORK} \
   --machine-type n1-standard-1 \
@@ -39,73 +38,5 @@ gcloud compute instances create $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}
 
 #wget https://storage.googleapis.com/kubernetes-release/release/v1.1.1/bin/linux/amd64/kubelet
 #https://github.com/kelseyhightower/coreos-ops-tutorial/blob/master/kube-kubelet.service
-
-ETCD_INSTANCES=$(echo $(for ETCD_INDEX in $(seq 1 ${ETCD_NODES_AMOUNT}); do if [ ${ETCD_INDEX} -gt 1 ]; then echo ","; fi; echo "${CLUSTER_NAME}-etcd-${ETCD_INDEX}"; done) | sed "s/\s//g")
-
-gcloud compute firewall-rules create ${CLUSTER_NAME}-etcd-internal \
-  --network ${NETWORK} \
-  --source-tags "${CLUSTER_NAME}-etcd" \
-  --target-tags "${CLUSTER_NAME}-etcd" \
-  --allow tcp:2380
-
-gcloud compute firewall-rules create ${CLUSTER_NAME}-etcd-lb-health \
-  --network ${NETWORK} \
-  --source-ranges 169.254.169.254/32 \
-  --target-tags "${CLUSTER_NAME}-etcd" \
-  --allow tcp:2379
-
-gcloud compute firewall-rules create ${CLUSTER_NAME}-etcd-k8s \
-  --network ${NETWORK} \
-  --source-tags "${CLUSTER_NAME}-etcd,${CLUSTER_NAME}-k8s-master" \ # TODO: doesn't work for traffic from etcd-lb: 104.155.72.16
-  --target-tags "${CLUSTER_NAME}-etcd" \
-  --allow tcp:2379
-
-gcloud compute addresses create ${CLUSTER_NAME}-lb-etcd-ip \
-  --region ${REGION}
-
-export ETCD_LB_IP=$(gcloud compute addresses describe ${CLUSTER_NAME}-lb-etcd-ip --region ${REGION} --format json | jq --raw-output '.address')
-
-gcloud compute http-health-checks create ${CLUSTER_NAME}-lb-etcd-check \
-  --port 2379 \
-  --request-path "/version"
-
-gcloud compute target-pools create ${CLUSTER_NAME}-lb-etcd-pool \
-  --region ${REGION} \
-  --health-check ${CLUSTER_NAME}-lb-etcd-check
-
-gcloud compute target-pools add-instances ${CLUSTER_NAME}-lb-etcd-pool \
-  --zone ${ZONE} \
-  --instances ${ETCD_INSTANCES}
-
-gcloud compute forwarding-rules create ${CLUSTER_NAME}-lb-etcd-rule \
-  --region ${REGION} \
-  --address ${ETCD_LB_IP} \
-  --ip-protocol TCP \
-  --port-range 2379 \
-  --target-pool ${CLUSTER_NAME}-lb-etcd-pool
-
-echo -e "- Setting up k8s master node"
-
-source ./func.sh
-K8S_MASTER_META=$(metatmp k8s-master.yaml ${CLUSTER_NAME}-k8s-master.yaml)
-
-gcloud compute instances create ${CLUSTER_NAME}-k8s-master \
-  --tags "${CLUSTER_NAME},${CLUSTER_NAME}-k8s-master" \
-  --network ${NETWORK} \
-  --zone ${ZONE} \
-  --machine-type n1-standard-1 \
-  --image-project coreos-cloud \
-  --image coreos-alpha-845-0-0-v20151025 \
-  --boot-disk-type pd-ssd \
-  --boot-disk-size 30GB \
-  --can-ip-forward \
-  --no-scopes \
-  --metadata-from-file user-data=${K8S_MASTER_META}
-
-gcloud compute firewall-rules create ${CLUSTER_NAME}-flannel-udp-vxlan \
-  --network ${NETWORK} \
-  --source-tags "${CLUSTER_NAME}-k8s-master" \ # TODO: add worker nodes tag
-  --target-tags "${CLUSTER_NAME}-k8s-master" \ # TODO: add worker nodes tag
-  --allow udp:8472
 
 echo -e "- All tasks completed"
