@@ -33,6 +33,7 @@ gcloud compute instances create $(for NODES_INDEX in $(seq 1 ${MASTER_NODES_AMOU
   --boot-disk-type pd-ssd \
   --boot-disk-size 30GB \
   --can-ip-forward \
+  --scopes compute-rw \
   --metadata-from-file user-data=${NODE_META}
 
 #wget https://storage.googleapis.com/kubernetes-release/release/v1.1.1/bin/linux/amd64/kubelet
