@@ -4,7 +4,7 @@ write_files:
     permissions: 0644
     owner: root:root
     content: |
-      FLANNELD_IFACE=$public_ipv4
+      FLANNELD_IFACE=$private_ipv4
       FLANNELD_ETCD_ENDPOINTS=http://127.0.0.1:2379
 coreos:
   update:
@@ -12,10 +12,10 @@ coreos:
     group: alpha
   etcd2:
     discovery: ${ETCD_DISCOVERY_TOKEN}
-    initial-advertise-peer-urls: http://$public_ipv4:2380
-    listen-peer-urls: http://$public_ipv4:2380
-    listen-client-urls: http://$public_ipv4:2379,http://127.0.0.1:2379
-    advertise-client-urls: http://$public_ipv4:2379
+    initial-advertise-peer-urls: http://$private_ipv4:2380
+    listen-peer-urls: http://$private_ipv4:2380
+    listen-client-urls: http://$private_ipv4:2379,http://127.0.0.1:2379
+    advertise-client-urls: http://$private_ipv4:2379
     heartbeat-interval: 500
     election-timeout: 5000
   units:
@@ -61,7 +61,7 @@ coreos:
           --register-node=false \
           --allow-privileged=true \
           --config=/etc/kubernetes/manifests \
-          --hostname-override=$public_ipv4 \
+          --hostname-override=$private_ipv4 \
           --cluster_dns=${DNS_SERVICE_IP} \
           --cluster_domain=cluster.local \
           --cadvisor-port=0 \
