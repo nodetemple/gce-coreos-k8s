@@ -12,10 +12,10 @@ coreos:
     group: alpha
   etcd2:
     discovery: ${ETCD_DISCOVERY_TOKEN}
-    initial-advertise-peer-urls: http://$public_ipv4:2380
-    listen-peer-urls: http://$public_ipv4:2380
-    listen-client-urls: http://$public_ipv4:2379,http://127.0.0.1:2379
-    advertise-client-urls: http://$public_ipv4:2379
+    initial-advertise-peer-urls: http://$private_ipv4:2380
+    listen-peer-urls: http://$private_ipv4:2380
+    listen-client-urls: http://$private_ipv4:2379,http://127.0.0.1:2379
+    advertise-client-urls: http://$private_ipv4:2379
     heartbeat-interval: 500
     election-timeout: 5000
   units:
