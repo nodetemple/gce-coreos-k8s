@@ -14,12 +14,6 @@ echo -e "- Setting up internal network"
 gcloud compute networks create ${CLUSTER_NAME}-network \
   --range ${NETWORK_RANGE}
 
-gcloud compute routes create ${CLUSTER_NAME}-internet \
-  --network ${CLUSTER_NAME}-network \
-  --destination-range 0.0.0.0/0 \
-  --next-hop-gateway default-internet-gateway \
-  --priority 1000
-
 echo -e "- Setting up firewall rules"
 
 gcloud compute firewall-rules create ${CLUSTER_NAME}-allow-external-ssh \
