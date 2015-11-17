@@ -49,7 +49,7 @@ echo -e "- Setting up ${MASTER_NODES_AMOUNT} master nodes"
 
 export ETCD_DISCOVERY_TOKEN=$(curl -s https://discovery.etcd.io/new?size=${MASTER_NODES_AMOUNT})
 source ./func.sh
-NODE_META=$(metatmp k8s-master.yaml ${CLUSTER_NAME}-k8s-master.yaml)
+NODE_META=$(metatmp k8s-master.sh ${CLUSTER_NAME}-k8s-master.sh)
 
 gcloud compute instances create $(for NODES_INDEX in $(seq 1 ${MASTER_NODES_AMOUNT}); do echo "${CLUSTER_NAME}-master-${NODES_INDEX}"; done) \
   --tags ${CLUSTER_NAME},${CLUSTER_NAME}-master \
@@ -61,8 +61,8 @@ gcloud compute instances create $(for NODES_INDEX in $(seq 1 ${MASTER_NODES_AMOU
   --boot-disk-type pd-ssd \
   --boot-disk-size 30GB \
   --can-ip-forward \
-  --no-scopes \
-  --metadata-from-file user-data=${NODE_META}
+  --scopes compute-ro \
+  --metadata-from-file startup-script=${NODE_META}
 
 #wget https://storage.googleapis.com/kubernetes-release/release/v1.1.1/bin/linux/amd64/kubelet
 
