@@ -11,11 +11,12 @@ MASTER_ADDRS=$(/usr/bin/curl -s -H "Authorization":"Bearer ${GCE_TOKEN}" "https:
 
 cat >/etc/systemd/system/nodetemple-master.service <<EOF
 [Service]
-ExecStartPre=-
-ExecStart=/usr/bin/echo "${MASTER_ADDRS}" > /root/etcd-masters
+ExecStartPre=-/usr/bin/mkdir -p /root/cluster-data/etcd
+ExecStart=/usr/bin/bash -c 'echo "${MASTER_ADDRS}" > /root/etcd-masters'
 Restart=always
 RestartSec=5
 StartLimitInterval=0
 EOF
 
+systemctl daemon-reload
 systemctl start nodetemple-master.service
