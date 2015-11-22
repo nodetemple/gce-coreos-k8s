@@ -58,7 +58,7 @@ do
   gcloud compute routes create ${CLUSTER_NAME}-master-${NODES_INDEX} \
     --network ${CLUSTER_NAME}-network \
     --priority 100 \
-    --destination-range 10.2.0.${NODES_INDEX} \
+    --destination-range ${MASTER_NODES_ROUTES_PREFIX}.${NODES_INDEX} \
     --next-hop-instance ${CLUSTER_NAME}-master-${NODES_INDEX}
 done
 

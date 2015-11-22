@@ -6,14 +6,15 @@ set -o pipefail
 export PROJECT=nodetemple-main-project
 
 export CLUSTER_NAME=demo-cluster
-
-export NETWORK=${CLUSTER_NAME}-network
-export NETWORK_RANGE=10.1.0.0/16
-
 export REGION=europe-west1
 export ZONE=${REGION}-d
 
 export MASTER_NODES_AMOUNT=3
+
+export NETWORK=${CLUSTER_NAME}-network
+export NETWORK_RANGE=10.1.0.0/16
+
+export MASTER_NODES_ROUTES_PREFIX=10.2.0
 
 # The CIDR network to use for service cluster VIPs (Virtual IPs). Each service will be assigned a cluster IP out of this range. This must not overlap with any IP ranges assigned to the POD_NETWORK, or other existing network infrastructure. Routing to these VIPs is handled by a local kube-proxy service to each node, and are not required to be routable between nodes.
 export SERVICE_IP_RANGE=10.3.0.0/24
