@@ -21,6 +21,12 @@ gcloud compute firewall-rules create ${CLUSTER_NAME}-allow-external-ssh \
   --allow tcp:22 \
   --source-ranges 0.0.0.0/0
 
+gcloud compute firewall-rules create ${CLUSTER_NAME}-allow-internal-icmp \
+  --network ${CLUSTER_NAME}-network \
+  --allow icmp \
+  --source-ranges ${NETWORK_RANGE} \
+  --target-tags ${CLUSTER_NAME}
+
 gcloud compute firewall-rules create ${CLUSTER_NAME}-allow-internal-etcd-peers \
   --network ${CLUSTER_NAME}-network \
   --allow tcp:2380 \
@@ -29,7 +35,7 @@ gcloud compute firewall-rules create ${CLUSTER_NAME}-allow-internal-etcd-peers \
 
 gcloud compute firewall-rules create ${CLUSTER_NAME}-allow-internal-etcd-clients \
   --network ${CLUSTER_NAME}-network \
-  --allow tcp:2379,icmp \
+  --allow tcp:2379 \
   --source-ranges ${NETWORK_RANGE} \
   --target-tags ${CLUSTER_NAME}-master
 
