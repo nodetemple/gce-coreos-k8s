@@ -59,7 +59,7 @@ gcloud compute instances create $(for NODES_INDEX in $(seq 1 ${MASTER_NODES_AMOU
   --network ${NETWORK} \
   --machine-type n1-standard-1 \
   --image-project coreos-cloud \
-  --image coreos-alpha-845-0-0-v20151025 \
+  --image coreos-alpha-870-2-0-v20151120 \
   --boot-disk-type pd-ssd \
   --boot-disk-size 30GB \
   --can-ip-forward \
